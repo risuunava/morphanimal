@@ -1,4 +1,5 @@
 # PLAN.md — Morphanimal
+
 ## Development Plan v1.0.0
 
 **Target:** Flutter Android App (offline-first, zero-cost)
@@ -25,21 +26,25 @@ ESTIMASI:
 ---
 
 ## PHASE 0 — SETUP & FONDASI
+
 **Goal:** Project siap dikoding, semua tool terpasang, struktur folder bersih.
 **Estimasi Total:** 3–5 hari
 
 ---
 
 ### TASK 0.1 — Persiapan Environment
+
 ⏱ 2–4 jam
 
 **Checklist:**
+
 - [ ] Install Flutter SDK versi stabil terbaru (≥ 3.19)
 - [ ] Install Android Studio + Android SDK (API level 24 minimum, target 34)
 - [ ] Pasang VS Code extension: Flutter, Dart, Riverpod Snippets
 - [ ] Install FVM (Flutter Version Manager) untuk lock versi Flutter
 
 **Perintah:**
+
 ```bash
 # Cek instalasi
 flutter doctor -v
@@ -58,9 +63,11 @@ fvm use stable
 ---
 
 ### TASK 0.2 — Buat Project Flutter
+
 ⏱ 1 jam
 
 **Perintah:**
+
 ```bash
 flutter create \
   --org com.morphanimal \
@@ -72,6 +79,7 @@ cd morphanimal
 ```
 
 📁 Struktur awal yang dibuat Flutter:
+
 ```
 morphanimal/
 ├── android/
@@ -87,9 +95,11 @@ morphanimal/
 ---
 
 ### TASK 0.3 — Setup Struktur Folder Clean Architecture
+
 ⏱ 2–3 jam
 
 **Buat struktur folder ini secara manual atau dengan script:**
+
 ```bash
 mkdir -p lib/{core/{constants,utils,theme,errors},data/{models,repositories,datasources/{local,remote}},domain/{entities,usecases,repositories},presentation/{screens/{home,capture,battle,collection,bestiary,profile,onboarding},widgets,providers},ai,game}
 
@@ -97,6 +107,7 @@ mkdir -p assets/{fonts,icons/elements,animations,images,backgrounds}
 ```
 
 📁 Hasil akhir `lib/`:
+
 ```
 lib/
 ├── core/
@@ -168,17 +179,19 @@ lib/
 ---
 
 ### TASK 0.4 — Setup pubspec.yaml (Semua Dependencies)
+
 ⏱ 1–2 jam
 
 **Isi `pubspec.yaml`:**
+
 ```yaml
 name: morphanimal
 description: Morphanimal
 version: 1.0.0+1
-publish_to: 'none'
+publish_to: "none"
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -250,6 +263,7 @@ flutter:
 ```
 
 **Perintah setelah edit:**
+
 ```bash
 flutter pub get
 ```
@@ -261,6 +275,7 @@ flutter pub get
 ---
 
 ### TASK 0.5 — Setup Theme & Design System di Kode
+
 ⏱ 3–4 jam
 
 **File yang dibuat:**
@@ -272,6 +287,7 @@ flutter pub get
 `lib/core/theme/app_spacing.dart` — semua konstanta spacing, radius, shadow
 
 `lib/core/theme/app_theme.dart`:
+
 ```dart
 // Konfigurasi MaterialTheme dengan:
 // - colorScheme dari AppColors (light theme)
@@ -283,6 +299,7 @@ flutter pub get
 ```
 
 **Update `lib/main.dart`:**
+
 ```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -309,9 +326,11 @@ class MorphanimalApp extends ConsumerWidget {
 ---
 
 ### TASK 0.6 — Setup Navigation (go_router)
+
 ⏱ 2–3 jam
 
 📁 Buat `lib/core/router/app_router.dart`:
+
 ```dart
 // Routes yang didefinisikan:
 // /                → SplashScreen
@@ -335,6 +354,7 @@ class MorphanimalApp extends ConsumerWidget {
 ---
 
 ### TASK 0.7 — Setup Git & GitHub
+
 ⏱ 30 menit
 
 ```bash
@@ -349,6 +369,7 @@ git push -u origin main
 ```
 
 📁 Buat `.gitignore` yang mengecualikan:
+
 ```
 .dart_tool/
 build/
@@ -363,20 +384,24 @@ assets/models/    ← file .tflite terlalu besar untuk git, gunakan Git LFS
 ---
 
 ## PHASE 1 — CORE GAMEPLAY (MVP)
+
 **Goal:** Bisa foto hewan → dapat Morphanimal → simpan ke koleksi. Loop utama jalan.
 **Estimasi Total:** 6–8 minggu
 
 ---
 
 ### SPRINT 1.A — LOCAL DATABASE (HIVE)
+
 **Estimasi:** 4–5 hari
 
 ---
 
 #### TASK 1.A.1 — Definisi Entity & Model
+
 ⏱ 3–4 jam
 
 📁 `lib/domain/entities/creature.dart`:
+
 ```dart
 // Pure Dart class (no Hive annotation di sini)
 class Creature {
@@ -401,6 +426,7 @@ class Creature {
 ```
 
 📁 `lib/domain/entities/player.dart`:
+
 ```dart
 class Player {
   final String id;
@@ -416,6 +442,7 @@ class Player {
 ```
 
 📁 `lib/domain/entities/skill.dart`:
+
 ```dart
 class Skill {
   final String id;
@@ -433,9 +460,11 @@ class Skill {
 ---
 
 #### TASK 1.A.2 — Hive Models (Data Layer)
+
 ⏱ 3–4 jam
 
 📁 `lib/data/models/creature_model.dart`:
+
 ```dart
 @HiveType(typeId: 0)
 class CreatureModel extends HiveObject {
@@ -451,6 +480,7 @@ class CreatureModel extends HiveObject {
 📁 `lib/data/models/player_model.dart` (typeId: 1)
 📁 `lib/data/models/skill_model.dart` (typeId: 2)
 📁 `lib/data/models/bestiary_model.dart` (typeId: 3):
+
 ```dart
 @HiveType(typeId: 3)
 class BestiaryModel extends HiveObject {
@@ -462,6 +492,7 @@ class BestiaryModel extends HiveObject {
 ```
 
 **Generate adapter:**
+
 ```bash
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
@@ -474,9 +505,11 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ---
 
 #### TASK 1.A.3 — Hive Datasource
+
 ⏱ 4–5 jam
 
 📁 `lib/data/datasources/local/hive_datasource.dart`:
+
 ```dart
 class HiveLocalDatasource {
   static const String creaturesBox = 'creatures';
@@ -520,9 +553,11 @@ class HiveLocalDatasource {
 ---
 
 #### TASK 1.A.4 — Repository Implementation
+
 ⏱ 3 jam
 
 📁 `lib/domain/repositories/creature_repository.dart` (interface):
+
 ```dart
 abstract class CreatureRepository {
   Future<void> save(Creature creature);
@@ -534,11 +569,13 @@ abstract class CreatureRepository {
 ```
 
 📁 `lib/data/repositories/creature_repository_impl.dart` (implementasi):
+
 - Inject `HiveLocalDatasource`
 - Konversi antara `Morphanimal` entity ↔ `MorphanimalModel`
 - Implementasi semua method interface
 
 📁 `lib/presentation/providers/providers.dart`:
+
 ```dart
 // Riverpod providers:
 final hiveDatasourceProvider = Provider((ref) => HiveLocalDatasource());
@@ -553,14 +590,17 @@ final collectionProvider = FutureProvider<List<Creature>>((ref) =>
 ---
 
 ### SPRINT 1.B — AI PIPELINE
+
 **Estimasi:** 7–10 hari
 
 ---
 
 #### TASK 1.B.1 — Download & Setup Model TFLite
+
 ⏱ 2–3 jam
 
 **Download model:**
+
 ```bash
 # iNaturalist model (pilih salah satu):
 # Option A: Seek app model (dari GitHub iNaturalist/SeekReactNative)
@@ -574,6 +614,7 @@ mkdir -p assets/models
 ```
 
 **Setup `android/app/build.gradle`:**
+
 ```groovy
 android {
     aaptOptions {
@@ -583,6 +624,7 @@ android {
 ```
 
 **Update `pubspec.yaml`:**
+
 ```yaml
 flutter:
   assets:
@@ -596,9 +638,11 @@ flutter:
 ---
 
 #### TASK 1.B.2 — Image Preprocessing
+
 ⏱ 4–5 jam
 
 📁 `lib/ai/preprocessing.dart`:
+
 ```dart
 class ImagePreprocessor {
   // 1. Blur detection (Laplacian variance)
@@ -634,9 +678,11 @@ class ImagePreprocessor {
 ---
 
 #### TASK 1.B.3 — Animal Detector (Stage 1)
+
 ⏱ 4–5 jam
 
 📁 `lib/ai/animal_detector.dart`:
+
 ```dart
 class AnimalDetector {
   late Interpreter _interpreter;
@@ -666,9 +712,11 @@ class AnimalDetector {
 ---
 
 #### TASK 1.B.4 — Species Classifier (Stage 2)
+
 ⏱ 5–6 jam
 
 📁 `lib/ai/species_classifier.dart`:
+
 ```dart
 class DetectionResult {
   final String species;       // "Felis catus"
@@ -712,9 +760,11 @@ class SpeciesClassifier {
 ---
 
 #### TASK 1.B.5 — Integrasi AI ke Provider
+
 ⏱ 3–4 jam
 
 📁 Update `lib/presentation/providers/providers.dart`:
+
 ```dart
 // Singleton AI providers (lazy initialized):
 final animalDetectorProvider = Provider<AnimalDetector>((ref) {
@@ -747,14 +797,17 @@ class CaptureNotifier extends _$CaptureNotifier {
 ---
 
 ### SPRINT 1.C — MORPHANIMAL GENERATION SYSTEM
+
 **Estimasi:** 5–7 hari
 
 ---
 
 #### TASK 1.C.1 — Seed Generator
+
 ⏱ 2–3 jam
 
 📁 `lib/core/utils/seed_generator.dart`:
+
 ```dart
 import 'package:crypto/crypto.dart';
 
@@ -793,9 +846,11 @@ class SeedGenerator {
 ---
 
 #### TASK 1.C.2 — Element & Rarity Resolver
+
 ⏱ 3–4 jam
 
 📁 `lib/core/constants/element_constants.dart`:
+
 ```dart
 // Map animal group → element primer + secondary options
 const Map<String, ElementMapping> animalElementMap = {
@@ -813,6 +868,7 @@ const Map<String, ElementMapping> animalElementMap = {
 ```
 
 📁 `lib/game/creature_generator.dart` — `ElementResolver`:
+
 ```dart
 class ElementResolver {
   static String resolve(String animalGroup, DateTime captureTime, String seed) {
@@ -844,6 +900,7 @@ class ElementResolver {
 ```
 
 📁 `lib/game/creature_generator.dart` — `RarityResolver`:
+
 ```dart
 class RarityResolver {
   static String resolve(String seed, int streakDays) {
@@ -865,9 +922,11 @@ class RarityResolver {
 ---
 
 #### TASK 1.C.3 — Stat Calculator
+
 ⏱ 3–4 jam
 
 📁 `lib/core/constants/rarity_constants.dart`:
+
 ```dart
 // Stat ranges sesuai GDD Section 5.1
 const Map<String, StatRange> rarityStatRanges = {
@@ -886,6 +945,7 @@ const Map<String, StatModifier> speciesModifiers = {
 ```
 
 📁 `lib/game/creature_generator.dart` — `StatCalculator`:
+
 ```dart
 class StatCalculator {
   static CreatureStats calculate(String rarity, String animalGroup, String seed) {
@@ -929,9 +989,11 @@ class StatCalculator {
 ---
 
 #### TASK 1.C.4 — Name Generator
+
 ⏱ 2–3 jam
 
 📁 `lib/game/creature_generator.dart` — `NameGenerator`:
+
 ```dart
 const Map<String, List<String>> elementPrefixes = {
   'fire':     ['Embara', 'Pyrion', 'Ignar', 'Blazen', 'Ashur'],
@@ -981,9 +1043,11 @@ class NameGenerator {
 ---
 
 #### TASK 1.C.5 — Skill Assigner
+
 ⏱ 3–4 jam
 
 📁 `lib/core/constants/skill_database.dart`:
+
 ```dart
 // Daftar semua skill per elemen (sesuai GDD 6.4)
 // Setiap elemen punya 5–8 skill
@@ -1007,6 +1071,7 @@ const Map<String, List<SkillData>> skillsByElement = {
 ```
 
 📁 `lib/game/creature_generator.dart` — `SkillAssigner`:
+
 ```dart
 class SkillAssigner {
   // Sesuai GDD: 1-2 skill dari element primer (dijamin), 1 dari species, 1 random
@@ -1044,9 +1109,11 @@ class SkillAssigner {
 ---
 
 #### TASK 1.C.6 — MorphanimalGenerator (Orchestrator)
+
 ⏱ 2–3 jam
 
 📁 `lib/game/creature_generator.dart` — class utama:
+
 ```dart
 class CreatureGenerator {
   static Creature generate({
@@ -1099,14 +1166,17 @@ class CreatureGenerator {
 ---
 
 ### SPRINT 1.D — CAMERA & CAPTURE FLOW
+
 **Estimasi:** 5–7 hari
 
 ---
 
 #### TASK 1.D.1 — Permission Handler
+
 ⏱ 2 jam
 
 📁 `lib/core/utils/permission_handler.dart`:
+
 ```dart
 // Minta permission: camera, storage (READ_EXTERNAL_STORAGE / WRITE)
 // Tampilkan dialog ramah sebelum request (bukan langsung minta)
@@ -1114,6 +1184,7 @@ class CreatureGenerator {
 ```
 
 **Update `android/app/src/main/AndroidManifest.xml`:**
+
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -1127,11 +1198,13 @@ class CreatureGenerator {
 ---
 
 #### TASK 1.D.2 — CaptureScreen UI
+
 ⏱ 4–5 jam
 
 📁 `lib/presentation/screens/capture/capture_screen.dart`:
 
 **Komponen yang dirender:**
+
 1. Live camera viewfinder (full screen, pakai `CameraPreview`)
 2. Overlay semi-transparent dengan crosshair target di tengah
 3. Teks "Arahkan ke hewan..." di bawah crosshair
@@ -1139,6 +1212,7 @@ class CreatureGenerator {
 5. AppBar transparan dengan tombol kembali
 
 **State machine UI:**
+
 ```dart
 // State: idle → scanning → result
 
@@ -1156,9 +1230,11 @@ class CreatureGenerator {
 ---
 
 #### TASK 1.D.3 — Image Save Flow
+
 ⏱ 3–4 jam
 
 📁 `lib/core/utils/image_utils.dart`:
+
 ```dart
 class ImageUtils {
   static Future<String> getStorageDir() async {
@@ -1188,9 +1264,11 @@ class ImageUtils {
 ---
 
 #### TASK 1.D.4 — CaptureNotifier (Use Case Orchestration)
+
 ⏱ 4–5 jam
 
 📁 `lib/presentation/screens/capture/capture_provider.dart`:
+
 ```dart
 @riverpod
 class CaptureNotifier extends _$CaptureNotifier {
@@ -1256,16 +1334,19 @@ class CaptureNotifier extends _$CaptureNotifier {
 ---
 
 ### SPRINT 1.E — REVEAL ANIMATION
+
 **Estimasi:** 3–4 hari
 
 ---
 
 #### TASK 1.E.1 — RevealScreen
+
 ⏱ 5–8 jam
 
 📁 `lib/presentation/screens/capture/reveal_screen.dart`:
 
 **10-step sequential animation (sesuai DESIGN.md 7.3):**
+
 ```dart
 // Gunakan flutter_animate dengan delay chaining
 
@@ -1290,14 +1371,17 @@ class CaptureNotifier extends _$CaptureNotifier {
 ---
 
 ### SPRINT 1.F — COLLECTION & DETAIL SCREEN
+
 **Estimasi:** 5–7 hari
 
 ---
 
 #### TASK 1.F.1 — Widget: CreatureCard
+
 ⏱ 4–5 jam
 
 📁 `lib/presentation/widgets/creature_card.dart`:
+
 - Mode grid (compact 200dp) dan mode list
 - Background warna elemen sesuai DESIGN.md `ElementColors`
 - Hero widget pada artwork (untuk shared element transition)
@@ -1311,20 +1395,23 @@ class CaptureNotifier extends _$CaptureNotifier {
 ---
 
 #### TASK 1.F.2 — Widget: StatBar
+
 ⏱ 2–3 jam
 
 📁 `lib/presentation/widgets/stat_bar.dart`:
+
 - Animated width dari 0 → target saat pertama kali mount
 - Label: HP/ATK/DEF/SPD (fixed 36dp, right-align)
 - Bar: warna bisa dikonfigurasi, 7dp tinggi, pill radius
 - Value: JetBrains Mono, 38dp fixed right-align
 
-✅ Animasi jalan saat screen pertama dibuka
-✅ Angka tidak meluap dari container
+✅✅ Animasi jalan saat screen pertama dibuka
+✅✅ Angka tidak meluap dari container
 
 ---
 
 #### TASK 1.F.3 — Widget: ElementBadge & RarityBadge
+
 ⏱ 1–2 jam
 
 📁 `lib/presentation/widgets/element_badge.dart`
@@ -1332,29 +1419,33 @@ class CaptureNotifier extends _$CaptureNotifier {
 
 Sesuai spesifikasi DESIGN.md Section 5.2 dan 5.3.
 
-✅ Badge Electric: teks gelap (bukan putih, karena background kuning terang)
-✅ Badge Legendary: border emas, teks emas (bukan background solid)
+✅✅ Badge Electric: teks gelap (bukan putih, karena background kuning terang)
+✅✅ Badge Legendary: border emas, teks emas (bukan background solid)
 
 ---
 
 #### TASK 1.F.4 — CollectionScreen
+
 ⏱ 5–6 jam
 
 📁 `lib/presentation/screens/collection/collection_screen.dart`:
 
 **Layout:**
+
 - AppBar: judul + filter sort (bottom sheet)
 - Filter tab horizontal: Semua | Fire | Water | dst (horizontal scroll)
 - Grid 2 kolom dengan `SliverGrid`
 - Empty state: ilustrasi + teks "Belum ada kreatur. Mulai foto!"
 
 **Fitur sort (bottom sheet):**
+
 - Terbaru (default)
 - Rarity (Legendary dulu)
 - Level tertinggi
 - Nama A-Z
 
 **Provider filter:**
+
 ```dart
 @riverpod
 List<Creature> filteredCollection(FilteredCollectionRef ref, {
@@ -1367,18 +1458,21 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 }
 ```
 
-✅ Filter elemen berfungsi real-time
-✅ Sort berfungsi tanpa reload halaman
-✅ Empty state tampil saat koleksi kosong
+✅✅ Filter elemen berfungsi real-time
+✅✅ Grid list support staggered animation
+✅✅ Search case-insensitive
+✅✅ Empty state tampil dengan baik saat koleksi kosong
 
 ---
 
 #### TASK 1.F.5 — CreatureDetailScreen
+
 ⏱ 6–7 jam
 
 📁 `lib/presentation/screens/collection/creature_detail_screen.dart`:
 
 **Sections (scroll view):**
+
 1. Hero card (280dp) — nama, no, badges, artwork (Hero widget)
 2. About grid (2×2) — species, element, tanggal, lokasi
 3. Stats — 4 StatBar dengan animasi
@@ -1387,6 +1481,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 6. Action bar bawah — Rename | Set ke Tim | Share
 
 **Rename dialog:**
+
 ```dart
 // TextField dengan max 20 karakter
 // Validasi: tidak boleh kosong, tidak boleh angka saja
@@ -1400,16 +1495,19 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### SPRINT 1.G — HOME SCREEN & ONBOARDING
+
 **Estimasi:** 4–5 hari
 
 ---
 
 #### TASK 1.G.1 — HomeScreen
+
 ⏱ 5–6 jam
 
 📁 `lib/presentation/screens/home/home_screen.dart`:
 
 **Sections:**
+
 1. AppBar: avatar + nama hunter + notif ikon
 2. Hunter Card (XP bar, streak, total kreatur)
 3. Daily Mission preview (2 card horizontal)
@@ -1417,6 +1515,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 5. Bestiary progress bar
 
 **Streak logic (di PlayerRepository):**
+
 ```dart
 // Saat app dibuka: cek lastLogin
 // Jika lastLogin.date == yesterday → streak++
@@ -1431,11 +1530,13 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 #### TASK 1.G.2 — OnboardingScreen & FTUE
+
 ⏱ 3–4 jam
 
 📁 `lib/presentation/screens/onboarding/onboarding_screen.dart`:
 
 **Flow:**
+
 1. Splash (1.5s) → cek apakah first time
 2. Jika first time: 3 onboarding slide (PageView)
    - Slide 1: "Dunia nyata, monster fantasi"
@@ -1446,6 +1547,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 5. Reveal animasi → masuk HomeScreen
 
 **First time detection:**
+
 ```dart
 // Simpan flag di Hive: 'isFirstTime' → bool
 // Jika false: langsung ke HomeScreen
@@ -1458,15 +1560,18 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ## PHASE 2 — ENGAGEMENT
+
 **Goal:** User punya alasan kembali setiap hari.
 **Estimasi Total:** 4–6 minggu
 
 ---
 
 ### TASK 2.1 — Daily Mission System
+
 ⏱ 5–7 hari
 
 📁 `lib/game/mission_generator.dart`:
+
 ```dart
 // Generate 3 misi harian dengan seed = tanggal hari ini
 // 6 tipe misi sesuai GDD 7.3
@@ -1475,6 +1580,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ```
 
 📁 `lib/presentation/screens/home/mission_card.dart`:
+
 - Progress bar per misi
 - Animasi "centang" saat selesai
 - XP + Gold reward tampil saat claim
@@ -1486,15 +1592,18 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.2 — Achievement System
+
 ⏱ 3–4 hari
 
 📁 `lib/core/constants/achievement_constants.dart`:
+
 ```dart
 // 15 achievement sesuai GDD 7.4
 // Setiap achievement: id, nama, deskripsi, tier, criteria
 ```
 
 📁 `lib/game/achievement_checker.dart`:
+
 ```dart
 // Dipanggil setiap kali ada event penting (capture, battle, login)
 // Cek semua achievement yang belum unlock
@@ -1502,6 +1611,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ```
 
 📁 `lib/presentation/widgets/achievement_toast.dart`:
+
 - Toast khusus achievement: ikon + nama + tier badge
 - Muncul dari atas, 3 detik, lalu slide kembali ke atas
 
@@ -1511,9 +1621,11 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.3 — BestiaryScreen
+
 ⏱ 3–4 hari
 
 📁 `lib/presentation/screens/bestiary/bestiary_screen.dart`:
+
 - Grid spesies dengan filter kategori (Mamalia, Burung, Reptil, dll)
 - Spesies belum ditemukan: silhouette hitam + tanda tanya
 - Spesies ditemukan: foto representative + nama + jumlah capture
@@ -1525,9 +1637,11 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.4 — Share Card Generator
+
 ⏱ 2–3 hari
 
 📁 `lib/presentation/screens/collection/share_card.dart`:
+
 ```dart
 // Widget 1080×1080 yang di-screenshot
 // Layout:
@@ -1551,9 +1665,11 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.5 — Export / Import JSON Backup
+
 ⏱ 2–3 hari
 
 📁 `lib/data/repositories/backup_repository.dart`:
+
 - Export: serialize semua Creature + Player ke JSON → simpan ke Downloads
 - Import: baca JSON → validasi schema → merge atau overwrite
 - UI: di ProfileScreen, dua tombol "Ekspor Koleksi" dan "Impor Koleksi"
@@ -1564,6 +1680,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.6 — Unknown Beast Polish
+
 ⏱ 1–2 hari
 
 - Pastikan Unknown Beast di-generate dengan rarity boost +10%
@@ -1577,6 +1694,7 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ### TASK 2.7 — UI Polish & Animasi Phase 2
+
 ⏱ 4–5 hari
 
 - Tambahkan Lottie animation untuk:
@@ -1593,15 +1711,18 @@ List<Creature> filteredCollection(FilteredCollectionRef ref, {
 ---
 
 ## PHASE 3 — BATTLE SYSTEM
+
 **Goal:** Depth gameplay meningkat, user punya tujuan melatih Morphanimal.
 **Estimasi Total:** 6–8 minggu
 
 ---
 
 ### TASK 3.1 — Battle Engine (Core Logic)
+
 ⏱ 7–10 hari
 
 📁 `lib/game/battle_engine.dart`:
+
 ```dart
 class BattleEngine {
   // Turn order: SPD lebih tinggi attack duluan
@@ -1628,9 +1749,11 @@ class BattleState {
 ---
 
 ### TASK 3.2 — CPU Opponent Generator
+
 ⏱ 3–4 hari
 
 📁 `lib/game/battle_engine.dart` — `CpuOpponent`:
+
 ```dart
 class CpuOpponent {
   // Generate creature lawan berdasarkan player level
@@ -1646,11 +1769,13 @@ class CpuOpponent {
 ---
 
 ### TASK 3.3 — BattleScreen UI
+
 ⏱ 7–10 hari
 
 📁 `lib/presentation/screens/battle/battle_screen.dart`:
 
 **Layout:**
+
 ```
 [HP bar lawan]  [Foto creature lawan]
                                       (area battle)
@@ -1665,6 +1790,7 @@ class CpuOpponent {
 ```
 
 **Animasi:**
+
 - Creature shake saat terkena serangan
 - Damage number melayang dan fade out
 - HP bar berkurang dengan animasi (bukan langsung loncat)
@@ -1677,9 +1803,11 @@ class CpuOpponent {
 ---
 
 ### TASK 3.4 — Creature Leveling & XP
+
 ⏱ 3–4 hari
 
 📁 `lib/game/progression_calculator.dart`:
+
 ```dart
 class ProgressionCalculator {
   // XP dari battle: 10–50 XP tergantung rarity lawan
@@ -1702,9 +1830,11 @@ class ProgressionCalculator {
 ---
 
 ### TASK 3.5 — Battle Team Builder
+
 ⏱ 2–3 hari
 
 📁 `lib/presentation/screens/battle/team_builder_screen.dart`:
+
 - Tampilkan semua Morphanimal di koleksi
 - Pilih max 3 untuk tim
 - Tampilkan "power rating" tim (total BST ÷ 3)
@@ -1716,9 +1846,11 @@ class ProgressionCalculator {
 ---
 
 ### TASK 3.6 — Item System (Basic)
+
 ⏱ 2–3 hari
 
 Item yang ada di Phase 3:
+
 - **Capture Boost** (+5% rarity roll, berlaku 1 capture)
 - **Moonstone** (syarat evolusi Epic)
 - **Rare Candy** (+100 XP untuk satu Morphanimal)
@@ -1734,12 +1866,14 @@ Inventory: di PlayerModel, Map `{itemId: count}`
 ---
 
 ## PHASE 4 — SOCIAL & ONLINE
+
 **Goal:** Retensi komunitas, online features, monetisasi opsional.
 **Estimasi Total:** 4–6 minggu
 
 ---
 
 ### TASK 4.1 — Supabase Setup
+
 ⏱ 2–3 hari
 
 - Buat project Supabase (gratis)
@@ -1754,9 +1888,11 @@ Inventory: di PlayerModel, Map `{itemId: count}`
 ---
 
 ### TASK 4.2 — Auth (Supabase Anonymous + Email)
+
 ⏱ 3–4 hari
 
 📁 `lib/presentation/screens/profile/auth_screen.dart`:
+
 - Login dengan email + OTP (bukan password — lebih simple)
 - Anonymous login otomatis saat pertama buka app
 - Upgrade dari anonim ke akun email → data tersimpan
@@ -1767,6 +1903,7 @@ Inventory: di PlayerModel, Map `{itemId: count}`
 ---
 
 ### TASK 4.3 — Leaderboard
+
 ⏱ 2–3 hari
 
 - Weekly leaderboard berdasarkan total BST semua creature
@@ -1779,6 +1916,7 @@ Inventory: di PlayerModel, Map `{itemId: count}`
 ---
 
 ### TASK 4.4 — Local Notifications
+
 ⏱ 1–2 hari
 
 ```yaml
@@ -1787,6 +1925,7 @@ flutter_local_notifications: ^17.0.0
 ```
 
 Notifikasi yang dijadwalkan:
+
 - Daily reminder jam 09:00: "Misi harianmu sudah siap!"
 - Streak reminder jam 21:00 jika belum login: "Jangan putus streak-mu!"
 
@@ -1796,6 +1935,7 @@ Notifikasi yang dijadwalkan:
 ---
 
 ### TASK 4.5 — AdMob Integration (Opsional)
+
 ⏱ 2–3 hari
 
 ```yaml
@@ -1804,6 +1944,7 @@ google_mobile_ads: ^5.0.0
 ```
 
 Placement:
+
 - Rewarded video: "Tonton iklan → Capture Boost"
 - Banner: di halaman koleksi (bawah screen)
 
@@ -1815,6 +1956,7 @@ Placement:
 ## CHECKLIST SEBELUM RELEASE
 
 ### Technical
+
 - [ ] `flutter build apk --release` berhasil tanpa error
 - [ ] APK size < 80MB (termasuk model TFLite)
 - [ ] Test di minimal 2 device berbeda (low-end + mid-range)
@@ -1823,6 +1965,7 @@ Placement:
 - [ ] Semua gambar terkompresi (tidak ada file > 1MB di assets)
 
 ### Fungsional
+
 - [ ] Onboarding berjalan penuh tanpa skip crash
 - [ ] Capture → Reveal → Koleksi: loop berjalan tanpa error
 - [ ] CollectionScreen filter & sort berfungsi
@@ -1831,6 +1974,7 @@ Placement:
 - [ ] Streak reset dengan benar
 
 ### UI/UX
+
 - [ ] Semua elemen menggunakan warna dari AppColors (bukan hardcode)
 - [ ] Font Nunito tampil di semua teks
 - [ ] Tidak ada overflow/RenderFlex error di layar 5" maupun 6.5"
@@ -1838,6 +1982,7 @@ Placement:
 - [ ] Semua tap target minimal 44×44dp
 
 ### Play Store
+
 - [ ] Privacy policy URL tersedia
 - [ ] App icon 512×512px tersedia
 - [ ] Screenshot 3–5 buah untuk Play Store listing
@@ -1848,16 +1993,17 @@ Placement:
 
 ## RINGKASAN ESTIMASI
 
-| Phase | Fokus | Estimasi |
-|---|---|---|
-| Phase 0 | Setup & Fondasi | 3–5 hari |
-| Phase 1 | Core Gameplay (MVP) | 6–8 minggu |
-| Phase 2 | Engagement | 4–6 minggu |
-| Phase 3 | Battle System | 6–8 minggu |
-| Phase 4 | Social & Online | 4–6 minggu |
-| **Total** | | **~20–28 minggu** |
+| Phase     | Fokus               | Estimasi          |
+| --------- | ------------------- | ----------------- |
+| Phase 0   | Setup & Fondasi     | 3–5 hari          |
+| Phase 1   | Core Gameplay (MVP) | 6–8 minggu        |
+| Phase 2   | Engagement          | 4–6 minggu        |
+| Phase 3   | Battle System       | 6–8 minggu        |
+| Phase 4   | Social & Online     | 4–6 minggu        |
+| **Total** |                     | **~20–28 minggu** |
 
 **Rekomendasi urutan jika waktu terbatas:**
+
 1. Phase 0 + Phase 1 wajib (minimal viable)
 2. Phase 2 Task 2.1–2.3 (daily mission + achievement + bestiary)
 3. Phase 3 bisa dilewati jika fokus ke showcase/portofolio
@@ -1865,4 +2011,4 @@ Placement:
 
 ---
 
-*PLAN.md v1.0.0 | Morphanimal | Referensi: GDD v2.0 + DESIGN.md v1.0*
+_PLAN.md v1.0.0 | Morphanimal | Referensi: GDD v2.0 + DESIGN.md v1.0_
