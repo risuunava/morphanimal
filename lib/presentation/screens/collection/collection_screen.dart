@@ -116,9 +116,38 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             );
           }
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => _ShimmerGrid(),
         error: (err, stack) => Center(child: Text('Error: $err')),
       ),
+    );
+  }
+}
+
+// ─── Shimmer Loading Grid ─────────────────────────────────────────────────────
+
+class _ShimmerGrid extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: 6,
+      itemBuilder: (_, i) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ).animate(onPlay: (c) => c.repeat(reverse: true))
+          .shimmer(
+            delay: (i * 100).ms,
+            duration: 1200.ms,
+            color: Colors.white.withValues(alpha: 0.25),
+          ),
     );
   }
 }

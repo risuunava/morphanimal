@@ -48,7 +48,8 @@ class CreatureGenerator {
     );
 
     final element = ElementResolver.resolve(detection.animalGroup, captureTime, seed);
-    final rarity  = RarityResolver.resolve(seed, player.streak);
+    final isUnknown = detection.animalGroup == 'unknown';
+    final rarity  = RarityResolver.resolve(seed, player.streak, isUnknown: isUnknown);
     final stats   = StatCalculator.calculate(rarity, detection.animalGroup, seed);
     final name    = NameGenerator.generate(element, detection.animalGroup, rarity, seed);
     final skills  = SkillAssigner.assign(element, detection.animalGroup, rarity, seed);

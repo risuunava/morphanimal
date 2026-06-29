@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/achievement_constants.dart';
 import '../../domain/entities/player.dart';
 import '../../domain/entities/creature.dart';
-import '../providers/providers.dart';
+import '../presentation/providers/providers.dart';
 
 class AchievementChecker {
   final Ref ref;
@@ -13,6 +13,8 @@ class AchievementChecker {
   /// Return list achievement yang baru saja di-unlock.
   Future<List<AchievementDefinition>> checkAchievements() async {
     final player = await ref.read(playerRepositoryProvider).get();
+    if (player == null) return [];
+    
     final creatures = await ref.read(creatureRepositoryProvider).getAll();
     
     final newlyUnlocked = <AchievementDefinition>[];

@@ -31,6 +31,24 @@ const List<String> legendaryEpithets = [
   'the Eternal', 'the Chosen', 'the Unseen', 'of the Void', 'Ascendant',
 ];
 
+/// Pool nama khusus Unknown Beast (Task 2.6)
+const List<String> unknownBeastNames = [
+  'Phantom Wraith',
+  'Void Enigma',
+  'Ancient Specter',
+  'Abyss Phantom',
+  'Void Stalker',
+  'Enigma Form',
+  'Ancient Wraith',
+  'Phantom Void',
+  'Shadow Enigma',
+  'Rift Entity',
+];
+
+/// Deskripsi flavor untuk Unknown Beast
+const String unknownBeastFlavor =
+    'Makhluk yang tidak dikenal oleh sains. Asal-usulnya masih misterius...';
+
 class NameGenerator {
   static String generate(
     String element,
@@ -38,6 +56,12 @@ class NameGenerator {
     String rarity,
     String seed,
   ) {
+    // Unknown Beast mendapat nama dari pool khusus (Task 2.6)
+    if (animalGroup == 'unknown') {
+      final idx = SeedGenerator.seededInt(seed, 'unknown_name', 0, unknownBeastNames.length);
+      return unknownBeastNames[idx];
+    }
+
     final prefixes = elementPrefixes[element] ?? elementPrefixes['shadow']!;
     final suffixes = animalSuffixes[animalGroup] ?? animalSuffixes['unknown']!;
 

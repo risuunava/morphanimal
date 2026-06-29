@@ -56,7 +56,10 @@ class _DetailScreenState extends State<DetailScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.share_rounded, color: Colors.white),
-                onPressed: () => ShareUtils.shareCard(_screenshotController, creature.creatureName),
+                onPressed: () => ShareUtils.shareCreatureCard(
+                  context: context,
+                  creature: creature,
+                ),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
