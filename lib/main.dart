@@ -9,6 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox<bool>('settings');
+  await Hive.openBox<String>('mission_settings');
   await HiveLocalDatasource.init();
   runApp(const ProviderScope(child: MorphanimalApp()));
 }
