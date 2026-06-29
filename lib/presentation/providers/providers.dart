@@ -29,3 +29,8 @@ final collectionProvider = FutureProvider<List<Creature>>((ref) {
 final playerProvider = FutureProvider((ref) {
   return ref.watch(playerRepositoryProvider).get();
 });
+
+final bestiaryProvider = FutureProvider((ref) async {
+  final entries = await ref.watch(hiveDatasourceProvider).getAllBestiaryEntries();
+  return entries;
+});
