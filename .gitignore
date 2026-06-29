@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Security / Keys
+.env
+.env*
+*.jks
+*.keystorekey.properties
+android/key.properties
+google-services.json
+GoogleService-Info.plist
+
+# Hive / Generated files
+*.hive
+*.hivec
+*.hivex
+*.g.dart
+*.freezed.dart
