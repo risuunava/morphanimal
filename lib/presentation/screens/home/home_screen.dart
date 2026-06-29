@@ -6,7 +6,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../providers/providers.dart';
+import '../../providers/mission_provider.dart';
 import '../../widgets/creature_card.dart';
+import 'mission_card.dart';
 import '../../../domain/entities/player.dart';
 import '../../../domain/entities/creature.dart';
 
@@ -57,6 +59,11 @@ class HomeScreen extends ConsumerWidget {
                 _buildSectionHeader(context, 'Aksi Cepat'),
                 const SizedBox(height: 12),
                 _QuickActions().animate().fadeIn(delay: 100.ms),
+
+                // Misi Harian
+                _buildSectionHeader(context, 'Misi Harian'),
+                const SizedBox(height: 12),
+                _DailyMissionSection().animate().fadeIn(delay: 120.ms),
 
                 const SizedBox(height: 24),
 
@@ -359,5 +366,20 @@ class _SkeletonCard extends StatelessWidget {
           duration: 1200.ms,
           color: Colors.white.withValues(alpha: 0.3),
         );
+  }
+}
+
+// ─── Daily Mission Section ────────────────────────────────────────────────────
+
+class _DailyMissionSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final missions = ref.watch(missionProvider);
+    return Column(
+      children: missions.map((m) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: MissionCard(mission: m),
+      )).toList(),
+    );
   }
 }
