@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -9,19 +8,31 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/constants/skill_database.dart';
 import '../../widgets/stat_bar.dart';
+import 'package:screenshot/screenshot.dart';
+import '../../../core/utils/share_utils.dart';
 
-class DetailScreen extends ConsumerWidget {
+class DetailScreen extends StatefulWidget {
   final Creature creature;
   const DetailScreen({super.key, required this.creature});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  final ScreenshotController _screenshotController = ScreenshotController();
+
+  @override
+  Widget build(BuildContext context) {
+    final creature = widget.creature;
     final palette = ElementColors.palettes[creature.element];
     final bg      = palette?.background ?? AppColors.surfaceDim;
     final primary = palette?.primary    ?? AppColors.onSurface;
 
-    return Scaffold(
-      backgroundColor: bg,
+    return Screenshot(
+      controller: _screenshotController,
+      child: Scaffold(
+        backgroundColor: bg,
       body: CustomScrollView(
         slivers: [
           // ─── Header App Bar (Artwork) ──────────────────────────────
@@ -42,6 +53,10 @@ class DetailScreen extends ConsumerWidget {
                 onPressed: () {
                   // TODO: Toggle favorite logic
                 },
+              ),
+              IconButton(
+                icon: const Icon(Icons.share_rounded, color: Colors.white),
+                onPressed: () => ShareUtils.shareCard(_screenshotController, creature.creatureName),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -200,6 +215,7 @@ class DetailScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
