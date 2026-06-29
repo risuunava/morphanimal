@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme/app_theme.dart';
+import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,14 +15,10 @@ class MorphanimalApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Morphanimal',
       theme: AppTheme.light,
-      home: const Scaffold(
-        body: Center(
-          child: Text('Morphanimal Setup OK'),
-        ),
-      ),
+      routerConfig: AppRouter.router,
       debugShowCheckedModeBanner: false,
     );
   }
