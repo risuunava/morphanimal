@@ -10,6 +10,7 @@ import '../../../core/constants/skill_database.dart';
 import '../../widgets/stat_bar.dart';
 import 'package:screenshot/screenshot.dart';
 import '../../../core/utils/share_utils.dart';
+import '../../../game/resolvers/name_generator.dart';
 
 class DetailScreen extends StatefulWidget {
   final Creature creature;
@@ -137,6 +138,18 @@ class _DetailScreenState extends State<DetailScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
+                            if (creature.species == 'unknown')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  unknownBeastFlavor,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.onSurfaceMed,
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

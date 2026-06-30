@@ -81,6 +81,17 @@ class HomeScreen extends ConsumerWidget {
                   error: (_, __) => const SizedBox.shrink(),
                 ),
 
+                const SizedBox(height: 24),
+
+                // Bestiary Progress
+                _buildSectionHeader(
+                  context,
+                  'Bestiary',
+                  onMore: () => context.push('/home/bestiary'),
+                ),
+                const SizedBox(height: 12),
+                _BestiaryProgressCard().animate().fadeIn(delay: 180.ms),
+
                 const SizedBox(height: 100), // Bottom padding for FAB
               ]),
             ),
@@ -380,6 +391,67 @@ class _DailyMissionSection extends ConsumerWidget {
         padding: const EdgeInsets.only(bottom: 12),
         child: MissionCard(mission: m),
       )).toList(),
+    );
+  }
+}
+
+// ─── Bestiary Progress Card ───────────────────────────────────────────────────
+
+class _BestiaryProgressCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bestiaryAsync = ref.watch(bestiaryProvider);
+    return bestiaryAsync.when(
+      data: (entries) {
+        final discovered = entries.where((e) => e.discovered).length;
+        final total = entries.length;
+        final progress = total > 0 ? discovered / total : 0.0;
+        return GestureDetector(
+          onTap: () => context.push('/home/bestiary'),
+          child: Container(
+            padding: AppSpacing.cardPadding,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('📖', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$discovered / $total Spesies',
+                        style: AppTextStyles.labelLarge,
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toStringAsFixed(0)}%',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.captureOrange,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: AppColors.surfaceDim,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.captureOrange),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const _SkeletonCard(height: 80),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

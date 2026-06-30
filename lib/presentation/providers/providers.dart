@@ -1,10 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/local/hive_datasource.dart';
+import '../../data/models/bestiary_model.dart';
 import '../../data/repositories/creature_repository_impl.dart';
 import '../../data/repositories/player_repository_impl.dart';
 import '../../domain/entities/creature.dart';
 import '../../ai/animal_detector.dart';
 import '../../ai/species_classifier.dart';
+import '../../core/constants/species_constants.dart';
+
+// ─── BESTIARY ENTRY ──────────────────────────────────────────────────────────
+
+class BestiaryEntry {
+  final String species;
+  final String commonName;
+  final String group;
+  final bool discovered;
+  final int captureCount;
+
+  const BestiaryEntry({
+    required this.species,
+    required this.commonName,
+    required this.group,
+    required this.discovered,
+    required this.captureCount,
+  });
+}
+
 // ─── DATASOURCE ──────────────────────────────────────────────────────────────
 
 final hiveDatasourceProvider = Provider<HiveLocalDatasource>((ref) {
@@ -31,9 +52,22 @@ final playerProvider = FutureProvider((ref) {
   return ref.watch(playerRepositoryProvider).get();
 });
 
-final bestiaryProvider = FutureProvider((ref) async {
-  final entries = await ref.watch(hiveDatasourceProvider).getAllBestiaryEntries();
-  return entries;
+final bestiaryProvider = FutureProvider<List<BestiaryEntry>>((ref) async {
+  final discoveredMap = <String, BestiaryModel>{};
+  for (final entry in await ref.watch(hiveDatasourceProvider).getAllBestiaryEntries()) {
+    discoveredMap[entry.species] = entry;
+  }
+
+  return allSpecies.map((species) {
+    final discovered = discoveredMap[species.species];
+    return BestiaryEntry(
+      species: species.species,
+      commonName: species.commonName,
+      group: species.group,
+      discovered: discovered != null,
+      captureCount: discovered?.captureCount ?? 0,
+    );
+  }).toList();
 });
 
 // ─── AI / ML ──────────────────────────────────────────────────────────────────

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/constants/achievement_constants.dart';
@@ -144,48 +146,115 @@ class ProfileScreen extends ConsumerWidget {
           label: 'Impor Koleksi',
           subtitle: 'Restore koleksi dari file backup JSON',
           color: const Color(0xFF7B1FA2),
-          onTap: () => _showImportDialog(context, ref),
+          onTap: () => _importCollection(context, ref),
         ),
       ],
     );
   }
 
-  void _showImportDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Impor Koleksi', style: AppTextStyles.headingMedium),
-        content: Text(
-          'Import akan menambahkan kreatur dari backup ke koleksimu saat ini.\n\n'
-          'Paste isi file backup JSON di bawah ini:',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.onSurfaceMed),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+  Future<void> _importCollection(BuildContext context, WidgetRef ref) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String jsonContent;
+
+      if (file.bytes != null) {
+        jsonContent = String.fromCharCodes(file.bytes!);
+      } else if (file.path != null) {
+        jsonContent = await File(file.path!).readAsString();
+      } else {
+        if (context.mounted) {
+          _showSnackBar(context, 'Gagal membaca file.', isError: true);
+        }
+        return;
+      }
+
+      final parseResult = BackupRepository.importFromJson(jsonContent);
+
+      if (!parseResult.success) {
+        if (context.mounted) {
+          _showSnackBar(context, parseResult.error ?? 'Gagal parse backup.',
+              isError: true);
+        }
+        return;
+      }
+
+      final creatures = parseResult.creatures;
+      if (creatures.isEmpty) {
+        if (context.mounted) {
+          _showSnackBar(context, 'Tidak ada kreatur dalam file backup.',
+              isError: true);
+        }
+        return;
+      }
+
+      if (!context.mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Konfirmasi Import',
+              style: AppTextStyles.headingMedium),
+          content: Text(
+            'Ditemukan ${creatures.length} kreatur dalam file backup.\n\n'
+            'Kreatur akan ditambahkan ke koleksi yang sudah ada.',
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: AppColors.onSurfaceMed),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF7B1FA2),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Batal'),
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              // TODO: Buka file picker untuk pilih file .json
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('File picker (Task 2.5.2) — coming soon!'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              );
-            },
-            child: const Text('Pilih File'),
-          ),
-        ],
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF7B1FA2),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Import'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final repo = ref.read(creatureRepositoryProvider);
+      for (final creature in creatures) {
+        await repo.save(creature);
+      }
+
+      ref.invalidate(collectionProvider);
+      ref.invalidate(bestiaryProvider);
+
+      if (context.mounted) {
+        _showSnackBar(
+            context, 'Berhasil import ${creatures.length} kreatur!');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showSnackBar(context, 'Error: $e', isError: true);
+      }
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade800 : const Color(0xFF7B1FA2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

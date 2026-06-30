@@ -5,12 +5,47 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../providers/providers.dart';
 
-class BestiaryScreen extends ConsumerWidget {
+class _CategoryFilter {
+  final String label;
+  final String? group;
+  const _CategoryFilter(this.label, this.group);
+}
+
+const _categoryFilters = [
+  _CategoryFilter('Semua', null),
+  _CategoryFilter('Mamalia', 'mamalia'),
+  _CategoryFilter('Burung', 'bird'),
+  _CategoryFilter('Reptil', 'reptile'),
+  _CategoryFilter('Amfibi', 'amphibian'),
+  _CategoryFilter('Ikan', 'fish'),
+  _CategoryFilter('Serangga', 'insect'),
+  _CategoryFilter('Misterius', 'unknown'),
+];
+
+String _groupToCategory(String group) {
+  switch (group) {
+    case 'cat':
+    case 'dog':
+    case 'primate':
+      return 'mamalia';
+    default:
+      return group;
+  }
+}
+
+class BestiaryScreen extends ConsumerStatefulWidget {
   const BestiaryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bestiaryAsync = ref.watch(bestiaryProvider); // asumsikan ini akan kita buat di provider
+  ConsumerState<BestiaryScreen> createState() => _BestiaryScreenState();
+}
+
+class _BestiaryScreenState extends ConsumerState<BestiaryScreen> {
+  String? _activeFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final bestiaryAsync = ref.watch(bestiaryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -21,6 +56,9 @@ class BestiaryScreen extends ConsumerWidget {
       ),
       body: bestiaryAsync.when(
         data: (entries) {
+          final filtered = _activeFilter == null
+              ? entries
+              : entries.where((e) => _groupToCategory(e.group) == _activeFilter).toList();
           final discoveredCount = entries.where((e) => e.discovered).length;
           final totalCount = entries.length;
           final progress = totalCount > 0 ? discoveredCount / totalCount : 0.0;
@@ -29,7 +67,7 @@ class BestiaryScreen extends ConsumerWidget {
             children: [
               // Progress Bar
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 color: AppColors.surface,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,9 +89,45 @@ class BestiaryScreen extends ConsumerWidget {
                         valueColor: const AlwaysStoppedAnimation<Color>(AppColors.captureOrange),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    // Filter chips
+                    SizedBox(
+                      height: 36,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categoryFilters.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final f = _categoryFilters[index];
+                          final isActive = _activeFilter == f.group;
+                          return GestureDetector(
+                            onTap: () => setState(() => _activeFilter = f.group),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.captureOrange
+                                    : AppColors.surfaceDim,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  f.label,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: isActive ? Colors.white : AppColors.onSurfaceMed,
+                                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
+              const SizedBox(height: 4),
 
               // Grid Spesies
               Expanded(
@@ -65,9 +139,9 @@ class BestiaryScreen extends ConsumerWidget {
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.8,
                   ),
-                  itemCount: totalCount,
+                  itemCount: filtered.length,
                   itemBuilder: (context, index) {
-                    final entry = entries[index];
+                    final entry = filtered[index];
                     return _BestiaryCell(entry: entry);
                   },
                 ),
@@ -83,18 +157,17 @@ class BestiaryScreen extends ConsumerWidget {
 }
 
 class _BestiaryCell extends StatelessWidget {
-  final dynamic entry; // Pakai dynamic sementara agar bisa dipakai sebelum provider selesai
+  final BestiaryEntry entry;
 
   const _BestiaryCell({required this.entry});
 
   @override
   Widget build(BuildContext context) {
-    final bool isDiscovered = entry.discovered;
+    final isDiscovered = entry.discovered;
 
     return GestureDetector(
       onTap: isDiscovered
           ? () {
-              // TODO: Filter collection by species (bisa arahkan ke search CollectionScreen)
               context.go('/home/collection');
             }
           : null,
@@ -130,7 +203,7 @@ class _BestiaryCell extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isDiscovered ? entry.species : '???',
+              isDiscovered ? entry.commonName : '???',
               textAlign: TextAlign.center,
               style: AppTextStyles.labelSmall.copyWith(
                 color: isDiscovered ? AppColors.onSurface : AppColors.onSurfaceLow,

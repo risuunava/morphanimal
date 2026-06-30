@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../game/achievement_checker.dart';
+import '../../../game/resolvers/name_generator.dart';
 import '../../widgets/achievement_toast.dart';
 
 class RevealScreen extends ConsumerStatefulWidget {
@@ -162,6 +163,22 @@ class _RevealScreenState extends ConsumerState<RevealScreen> {
                       )
                           .animate()
                           .fadeIn(delay: 2300.ms, duration: 200.ms),
+
+                      // Unknown Beast flavor text
+                      if (_creature.species == 'unknown') ...[
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Text(
+                            unknownBeastFlavor,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white70,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ).animate().fadeIn(delay: 2400.ms, duration: 300.ms),
+                      ],
 
                       const SizedBox(height: 20),
 

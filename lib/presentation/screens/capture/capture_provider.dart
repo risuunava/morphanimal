@@ -7,6 +7,7 @@ import '../../../core/utils/image_utils.dart';
 import '../../../ai/preprocessing.dart';
 import '../../../ai/species_classifier.dart';
 import '../../providers/providers.dart';
+import '../../providers/mission_provider.dart';
 
 // ─── States ──────────────────────────────────────────────────────────────────
 
@@ -20,7 +21,8 @@ class CaptureStateScanning extends CaptureState {}
 
 class CaptureStateAmbiguous extends CaptureState {
   final List<DetectionResult> options;
-  CaptureStateAmbiguous({required this.options});
+  final File imageFile;
+  CaptureStateAmbiguous({required this.options, required this.imageFile});
 }
 
 class CaptureStateFailed extends CaptureState {
@@ -70,7 +72,10 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
       DetectionResult detection;
       if (top == null && results.isNotEmpty) {
         // Ambiguous — minta user pilih
-        state = CaptureStateAmbiguous(options: results.take(3).toList());
+        state = CaptureStateAmbiguous(
+          options: results.take(3).toList(),
+          imageFile: imageFile,
+        );
         return;
       } else if (top == null) {
         detection = DetectionResult.unknown();
@@ -78,6 +83,19 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
         detection = top;
       }
 
+      await _completeCapture(detection, imageFile);
+    } catch (e) {
+      state = CaptureStateFailed(reason: CaptureFailReason.unknown);
+    }
+  }
+
+  Future<void> selectDetection(DetectionResult selected, File imageFile) async {
+    state = CaptureStateScanning();
+    await _completeCapture(selected, imageFile);
+  }
+
+  Future<void> _completeCapture(DetectionResult detection, File imageFile) async {
+    try {
       // 5. Get player
       final imageBytes = await imageFile.readAsBytes();
       final player = await _ref.read(playerRepositoryProvider).get() ??
@@ -116,18 +134,19 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
           .read(hiveDatasourceProvider)
           .markSpeciesDiscovered(creatureWithPaths.species);
 
-      // 10. Invalidate collection cache
+      // 10. Update mission progress
+      _ref.read(missionProvider.notifier).incrementProgress('capture_any');
+      if (creatureWithPaths.rarity != 'common') {
+        _ref.read(missionProvider.notifier).incrementProgress('capture_rare');
+      }
+
+      // 11. Invalidate collection cache
       _ref.invalidate(collectionProvider);
 
       state = CaptureStateSuccess(creature: creatureWithPaths);
     } catch (e) {
       state = CaptureStateFailed(reason: CaptureFailReason.unknown);
     }
-  }
-
-  Future<void> selectDetection(DetectionResult selected, File imageFile) async {
-    state = CaptureStateScanning();
-    await onCapture(imageFile);
   }
 
   void reset() => state = CaptureStateIdle();
