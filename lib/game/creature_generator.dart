@@ -9,28 +9,7 @@ import 'resolvers/name_generator.dart';
 import 'resolvers/skill_assigner.dart';
 import '../core/utils/seed_generator.dart';
 
-/// Hasil deteksi dari AI pipeline
-class DetectionResult {
-  final String species;       // "Felis catus"
-  final String commonName;    // "Kucing Domestik"
-  final String animalGroup;   // "cat", "dog", "bird", etc.
-  final double confidence;
-
-  const DetectionResult({
-    required this.species,
-    required this.commonName,
-    required this.animalGroup,
-    required this.confidence,
-  });
-
-  /// Fallback untuk hewan tidak dikenal
-  factory DetectionResult.unknown() => const DetectionResult(
-    species: 'Unknown',
-    commonName: 'Unknown Beast',
-    animalGroup: 'unknown',
-    confidence: 0.0,
-  );
-}
+import '../ai/species_classifier.dart';
 
 /// Orchestrator utama: gabungkan semua resolver menjadi satu Creature
 class CreatureGenerator {
@@ -48,7 +27,8 @@ class CreatureGenerator {
     );
 
     final element = ElementResolver.resolve(detection.animalGroup, captureTime, seed);
-    final rarity  = RarityResolver.resolve(seed, player.streak);
+    final isUnknown = detection.animalGroup == 'unknown';
+    final rarity  = RarityResolver.resolve(seed, player.streak, isUnknown: isUnknown);
     final stats   = StatCalculator.calculate(rarity, detection.animalGroup, seed);
     final name    = NameGenerator.generate(element, detection.animalGroup, rarity, seed);
     final skills  = SkillAssigner.assign(element, detection.animalGroup, rarity, seed);

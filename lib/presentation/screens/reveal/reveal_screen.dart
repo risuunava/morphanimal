@@ -7,14 +7,19 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 
-class RevealScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../game/achievement_checker.dart';
+import '../../../game/resolvers/name_generator.dart';
+import '../../widgets/achievement_toast.dart';
+
+class RevealScreen extends ConsumerStatefulWidget {
   const RevealScreen({super.key});
 
   @override
-  State<RevealScreen> createState() => _RevealScreenState();
+  ConsumerState<RevealScreen> createState() => _RevealScreenState();
 }
 
-class _RevealScreenState extends State<RevealScreen> {
+class _RevealScreenState extends ConsumerState<RevealScreen> {
   late ConfettiController _confetti;
   bool _showCta = false;
   late Creature _creature;
@@ -24,10 +29,22 @@ class _RevealScreenState extends State<RevealScreen> {
     super.initState();
     _confetti = ConfettiController(duration: const Duration(seconds: 5));
     // Tunggu animasi selesai, baru tampilkan CTA dan confetti
-    Future.delayed(const Duration(milliseconds: 2700), () {
+    Future.delayed(const Duration(milliseconds: 2700), () async {
       if (mounted) {
         setState(() => _showCta = true);
         if (_creature.rarity == 'legendary') _confetti.play();
+        
+        // Cek achievements
+        final newAchvs = await ref.read(achievementCheckerProvider).checkAchievements();
+        if (mounted) {
+          int delay = 0;
+          for (final achv in newAchvs) {
+            Future.delayed(Duration(milliseconds: delay), () {
+              if (mounted) AchievementToast.show(context, achv);
+            });
+            delay += 2500; // Queue toast
+          }
+        }
       }
     });
   }
@@ -146,6 +163,22 @@ class _RevealScreenState extends State<RevealScreen> {
                       )
                           .animate()
                           .fadeIn(delay: 2300.ms, duration: 200.ms),
+
+                      // Unknown Beast flavor text
+                      if (_creature.species == 'unknown') ...[
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Text(
+                            unknownBeastFlavor,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white70,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ).animate().fadeIn(delay: 2400.ms, duration: 300.ms),
+                      ],
 
                       const SizedBox(height: 20),
 

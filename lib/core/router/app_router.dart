@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/entities/creature.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/collection/collection_screen.dart';
+import '../../presentation/screens/collection/detail_screen.dart';
 import '../../presentation/screens/capture/capture_screen.dart';
 import '../../presentation/screens/battle/battle_screen.dart';
 import '../../presentation/screens/bestiary/bestiary_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
-import '../../presentation/screens/detail/creature_detail_screen.dart';
 import '../../presentation/screens/reveal/reveal_screen.dart';
 import '../../presentation/screens/main_shell/main_shell_screen.dart';
 
@@ -33,14 +34,28 @@ class AppRouter {
         path: '/reveal',
         builder: (context, state) => const RevealScreen(),
       ),
-      GoRoute(
-        path: '/creature/:id',
-        builder: (context, state) => const CreatureDetailScreen(),
-      ),
       // Ini route untuk screen yang bukan bagian dari bottom nav tapi ada di dalam alur home
       GoRoute(
         path: '/home/bestiary',
         builder: (context, state) => const BestiaryScreen(),
+      ),
+      GoRoute(
+        path: '/detail',
+        pageBuilder: (context, state) {
+          final creature = state.extra as Creature?;
+          if (creature == null) {
+            return const NoTransitionPage(child: SplashScreen());
+          }
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: DetailScreen(creature: creature),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              final tween = Tween(begin: const Offset(1, 0), end: Offset.zero)
+                  .chain(CurveTween(curve: Curves.easeOutCubic));
+              return SlideTransition(position: animation.drive(tween), child: child);
+            },
+          );
+        },
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,

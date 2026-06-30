@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'capture_provider.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
 class CaptureScreen extends ConsumerStatefulWidget {
@@ -62,11 +63,6 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
 
     final xFile = await _controller!.takePicture();
     await ref.read(captureNotifierProvider.notifier).onCapture(File(xFile.path));
-
-    final newState = ref.read(captureNotifierProvider);
-    if (newState is CaptureStateSuccess && mounted) {
-      context.go('/reveal', extra: newState.creature);
-    }
   }
 
   Future<void> _toggleFlash() async {
@@ -87,9 +83,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     final captureState = ref.watch(captureNotifierProvider);
     final isScanning = captureState is CaptureStateScanning;
 
-    ref.listen<CaptureState>(captureNotifierProvider, (_, next) {
-      if (next is CaptureStateFailed) {
+    ref.listen<CaptureState>(captureNotifierProvider, (_, next) async {
+      if (next is CaptureStateSuccess && mounted) {
+        context.go('/reveal', extra: next.creature);
+      } else if (next is CaptureStateFailed) {
         _showFailedSnackbar(next.reason);
+      } else if (next is CaptureStateAmbiguous && mounted) {
+        _showAmbiguousSheet(next);
       }
     });
 
@@ -265,6 +265,106 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     );
   }
 
+  void _showAmbiguousSheet(CaptureStateAmbiguous state) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.onSurfaceLow,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Pilih Spesies',
+              style: AppTextStyles.headingMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'AI tidak yakin dengan spesies ini.\nPilih yang paling cocok:',
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.onSurfaceMed),
+            ),
+            const SizedBox(height: 16),
+            ...state.options.map(
+              (opt) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ref
+                        .read(captureNotifierProvider.notifier)
+                        .selectDetection(opt, state.imageFile);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceDim,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.captureOrange.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.captureOrange.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.pets_rounded,
+                                color: AppColors.captureOrange),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                opt.commonName,
+                                style: AppTextStyles.labelLarge,
+                              ),
+                              Text(
+                                '${(opt.confidence * 100).toStringAsFixed(0)}% yakin',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.onSurfaceMed,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded,
+                            color: AppColors.onSurfaceLow),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showFailedSnackbar(CaptureFailReason reason) {
     final msg = switch (reason) {
       CaptureFailReason.blurry   => '📷 Foto terlalu blur, coba lagi!',
@@ -307,7 +407,7 @@ class _CrosshairPainter extends CustomPainter {
 
     final paths = [
       // top-left
-      [Offset(0, corner), Offset(0, r), Offset(r, 0), Offset(corner, 0)],
+      [const Offset(0, corner), const Offset(0, r), const Offset(r, 0), const Offset(corner, 0)],
       // top-right
       [
         Offset(size.width - corner, 0), Offset(size.width - r, 0),
