@@ -37,7 +37,7 @@ class BestiaryScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Progress Koleksi', style: AppTextStyles.labelLarge),
+                        const Text('Progress Koleksi', style: AppTextStyles.labelLarge),
                         Text('$discoveredCount / $totalCount Spesies', style: AppTextStyles.labelSmall.copyWith(color: AppColors.captureOrange)),
                       ],
                     ),

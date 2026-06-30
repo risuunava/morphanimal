@@ -4,6 +4,8 @@ import '../../../domain/entities/creature.dart';
 import '../../../domain/entities/player.dart';
 import '../../../game/creature_generator.dart';
 import '../../../core/utils/image_utils.dart';
+import '../../../ai/preprocessing.dart';
+import '../../../ai/species_classifier.dart';
 import '../../providers/providers.dart';
 
 // ─── States ──────────────────────────────────────────────────────────────────
@@ -40,19 +42,44 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
   Future<void> onCapture(File imageFile) async {
     state = CaptureStateScanning();
     try {
-      // 1. Baca image bytes untuk seed generation
+      // 1. Blur check
+      final isBlurry = await ImagePreprocessor.isBlurry(imageFile);
+      if (isBlurry) {
+        state = CaptureStateFailed(reason: CaptureFailReason.blurry);
+        return;
+      }
+
+      // 2. Preprocess image untuk model (quantized uint8)
+      final preprocessed = await ImagePreprocessor.prepareForModelQuantized(imageFile);
+
+      // 3. Stage 1: cek apakah ada hewan
+      final detector = _ref.read(animalDetectorProvider);
+      await detector.initialize();
+      final isAnimal = await detector.isAnimal(preprocessed);
+      if (!isAnimal) {
+        state = CaptureStateFailed(reason: CaptureFailReason.notAnimal);
+        return;
+      }
+
+      // 4. Stage 2: klasifikasi spesies
+      final classifier = _ref.read(speciesClassifierProvider);
+      await classifier.initialize();
+      final results = await classifier.classify(preprocessed);
+      final top = classifier.pickResult(results);
+
+      DetectionResult detection;
+      if (top == null && results.isNotEmpty) {
+        // Ambiguous — minta user pilih
+        state = CaptureStateAmbiguous(options: results.take(3).toList());
+        return;
+      } else if (top == null) {
+        detection = DetectionResult.unknown();
+      } else {
+        detection = top;
+      }
+
+      // 5. Get player
       final imageBytes = await imageFile.readAsBytes();
-
-      // 2. TODO (Task 1.B): blur check & AI detection
-      //    Untuk sekarang skip langsung ke generation dengan mock data
-      const detection = DetectionResult(
-        species: 'Felis catus',
-        commonName: 'Kucing Domestik',
-        animalGroup: 'cat',
-        confidence: 0.92,
-      );
-
-      // 3. Get player
       final player = await _ref.read(playerRepositoryProvider).get() ??
           Player(
             id: 'player_1',
@@ -66,7 +93,7 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
             battleTeamIds: [],
           );
 
-      // 4. Generate creature
+      // 6. Generate creature
       final creature = CreatureGenerator.generate(
         detection: detection,
         imageBytes: imageBytes,
@@ -74,22 +101,22 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
         player: player,
       );
 
-      // 5. Save images
+      // 7. Save images
       final paths = await ImageUtils.saveCreatureImages(imageFile, creature.id);
       final creatureWithPaths = creature.copyWith(
         imagePath: paths.thumbnail,
         rawImagePath: paths.original,
       );
 
-      // 6. Save to Hive
+      // 8. Save to Hive
       await _ref.read(creatureRepositoryProvider).save(creatureWithPaths);
 
-      // 7. Update bestiary
+      // 9. Update bestiary
       await _ref
           .read(hiveDatasourceProvider)
           .markSpeciesDiscovered(creatureWithPaths.species);
 
-      // 8. Invalidate collection cache
+      // 10. Invalidate collection cache
       _ref.invalidate(collectionProvider);
 
       state = CaptureStateSuccess(creature: creatureWithPaths);

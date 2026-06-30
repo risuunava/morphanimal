@@ -105,7 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Backup Section
-                _SectionHeader(title: 'Data & Backup'),
+                const _SectionHeader(title: 'Data & Backup'),
                 const SizedBox(height: 12),
                 _buildBackupSection(context, ref).animate().fadeIn(delay: 200.ms),
 
@@ -156,7 +156,7 @@ class ProfileScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Impor Koleksi', style: AppTextStyles.headingMedium),
+        title: const Text('Impor Koleksi', style: AppTextStyles.headingMedium),
         content: Text(
           'Import akan menambahkan kreatur dari backup ke koleksimu saat ini.\n\n'
           'Paste isi file backup JSON di bawah ini:',
@@ -398,7 +398,7 @@ class _BackupButton extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceLow),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceLow),
           ],
         ),
       ),

@@ -128,7 +128,7 @@ class CreatureCard extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceLow),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceLow),
         ],
       ),
     );

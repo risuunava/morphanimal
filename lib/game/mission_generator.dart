@@ -52,7 +52,7 @@ class MissionGenerator {
   /// Generate 3 misi harian deterministik berdasarkan seed tanggal
   static List<DailyMission> generate(DateTime date) {
     final dateSeed = '${date.year}-${date.month}-${date.day}';
-    final count = 3;
+    const count = 3;
 
     final pickedDefs = <MissionDefinition>[];
     final usedIndexes = <int>{};

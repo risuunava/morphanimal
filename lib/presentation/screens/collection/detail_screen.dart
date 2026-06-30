@@ -164,7 +164,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 32),
 
                   // Stats
-                  Text('Status', style: AppTextStyles.headingMedium)
+                  const Text('Status', style: AppTextStyles.headingMedium)
                       .animate().fadeIn(delay: 200.ms),
                   const SizedBox(height: 16),
                   Container(
@@ -190,7 +190,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 32),
 
                   // Skills
-                  Text('Skills', style: AppTextStyles.headingMedium)
+                  const Text('Skills', style: AppTextStyles.headingMedium)
                       .animate().fadeIn(delay: 350.ms),
                   const SizedBox(height: 16),
                   ...creature.skillIds.map((skillId) {

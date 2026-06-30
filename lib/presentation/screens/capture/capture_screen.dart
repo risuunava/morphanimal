@@ -307,7 +307,7 @@ class _CrosshairPainter extends CustomPainter {
 
     final paths = [
       // top-left
-      [Offset(0, corner), Offset(0, r), Offset(r, 0), Offset(corner, 0)],
+      [const Offset(0, corner), const Offset(0, r), const Offset(r, 0), const Offset(corner, 0)],
       // top-right
       [
         Offset(size.width - corner, 0), Offset(size.width - r, 0),

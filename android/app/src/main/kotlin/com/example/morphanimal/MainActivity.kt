@@ -1,4 +1,4 @@
-package com.morphanimal.morphanimal
+package com.example.morphanimal
 
 import io.flutter.embedding.android.FlutterActivity
 

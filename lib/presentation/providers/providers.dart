@@ -3,7 +3,8 @@ import '../../data/datasources/local/hive_datasource.dart';
 import '../../data/repositories/creature_repository_impl.dart';
 import '../../data/repositories/player_repository_impl.dart';
 import '../../domain/entities/creature.dart';
-
+import '../../ai/animal_detector.dart';
+import '../../ai/species_classifier.dart';
 // ─── DATASOURCE ──────────────────────────────────────────────────────────────
 
 final hiveDatasourceProvider = Provider<HiveLocalDatasource>((ref) {
@@ -34,3 +35,21 @@ final bestiaryProvider = FutureProvider((ref) async {
   final entries = await ref.watch(hiveDatasourceProvider).getAllBestiaryEntries();
   return entries;
 });
+
+// ─── AI / ML ──────────────────────────────────────────────────────────────────
+
+final animalDetectorProvider = Provider<AnimalDetector>((ref) {
+  final detector = AnimalDetector();
+  // We initialize async later or during app startup if needed
+  ref.onDispose(() => detector.dispose());
+  return detector;
+});
+
+final speciesClassifierProvider = Provider<SpeciesClassifier>((ref) {
+  final classifier = SpeciesClassifier();
+  ref.onDispose(() => classifier.dispose());
+  return classifier;
+});
+
+// State untuk proses capture:
+enum CaptureStatus { idle, scanning, ambiguous, failed, success }
